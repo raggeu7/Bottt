@@ -1,0 +1,5 @@
+[phases.setup]
+nixPkgs = ["chromium", "glib", "nss", "nspr", "atk", "cups", "dbus", "gdk-pixbuf", "gtk3", "pango", "cairo"]
+
+[start]
+cmd = "python main.py"
