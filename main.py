@@ -1,6 +1,7 @@
 import asyncio
 import os
 import re
+import shutil
 import urllib.parse
 
 import discord
@@ -23,16 +24,28 @@ async def scrape_media_stream(query: str):
     search_url = f"{TARGET_SITE_URL}/search?q={urllib.parse.quote(query)}"
 
     async with async_playwright() as p:
-        browser = await p.chromium.launch(
-            executable_path="/usr/bin/chromium",
-            headless=True,
-            args=[
+        chromium_path = (
+            os.getenv("CHROMIUM_PATH")
+            or shutil.which("chromium")
+            or shutil.which("chromium-browser")
+            or shutil.which("google-chrome")
+        )
+        launch_options = {
+            "headless": True,
+            "args": [
                 "--no-sandbox",
                 "--disable-setuid-sandbox",
                 "--disable-dev-shm-usage",
                 "--disable-gpu",
             ],
-        )
+        }
+        if chromium_path:
+            launch_options["executable_path"] = chromium_path
+            print(f"Chromium executable: {chromium_path}")
+        else:
+            print("Chromium executable not found on PATH; using Playwright default.")
+
+        browser = await p.chromium.launch(**launch_options)
         context = await browser.new_context(
             user_agent=(
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
